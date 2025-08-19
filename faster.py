@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import chromadb
 from langchain_huggingface import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
 import httpx
 import time
 
@@ -13,10 +14,11 @@ class Query(BaseModel):
 
 # ---------------- Config ----------------
 CHROMA_DIR = "chroma_db"
-COLLECTION_NAME = "bjs_col"
-EMBEDDING_MODEL = r"C:\bjsChatBot\multilingual-e5-base"  # keep your current model
+COLLECTION_NAME = "bjs_colSmall"
+# EMBEDDING_MODEL = r"C:\bjsChatBot\multilingual-e5-base"
+EMBEDDING_MODEL = r"C:\bjsChatBot\models\multilingual-MiniLM"
 OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2:3b"
+OLLAMA_MODEL = "llama3.2:1b"
 TOP_K = 2  # fewer chunks → smaller prompt → faster response
 
 # ---------------- Load Chroma ----------------
