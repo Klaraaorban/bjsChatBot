@@ -1,15 +1,12 @@
-# response.py
+from fastapi import FastAPI
+from pydantic import BaseModel
 import chromadb
 from langchain_huggingface import HuggingFaceEmbeddings
-import numpy as np
 import requests
 import time
-from faster import FastAPI
-from pydantic import BaseModel
 
-start_time = time.time()
+# ---------------- FastAPI setup ----------------
 app = FastAPI()
-
 class Query(BaseModel):
     question: str
 
@@ -18,8 +15,8 @@ CHROMA_DIR = "chroma_db"
 COLLECTION_NAME = "bjs_col"
 EMBEDDING_MODEL = r"C:\bjsChatBot\multilingual-e5-base"
 OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "llama3.2:3b"  # your local Ollama model
-TOP_K = 3  # top chunks to send to Ollama
+OLLAMA_MODEL = "llama3.2:3b"
+TOP_K = 3
 
 # ---------------- Load Chroma ----------------
 chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
@@ -47,44 +44,30 @@ Antwort:
     response.raise_for_status()
     return response.json()["response"]
 
+# ---------------- API endpoints ----------------
+@app.get("/")
+def root():
+    return {"message": "Server is running. POST to /ask to query."}
 
-
-# --------------- API for server ----------------
 @app.post("/ask")
-def ask(query: Query):
-    query_embedding = embeddings.embed_query(query.question)
-    results = collection.query(query_embeddings=[query_embedding], n_results=TOP_K)
-    top_chunks = [
-        {"content": c, "metadata": m}
-        for c, m in zip(results["documents"][0], results["metadatas"][0])
-    ]
-    answer = ask_ollama(query.question, top_chunks)
-    return {"answer": answer}
-
-# ---------------- Main pipeline ----------------
-def main():
-    query = input("Stelle BJS eine Frage: ")
+def ask_endpoint(query: Query):
+    start_time = time.time()
 
     # 1. Embed query
-    query_embedding = embeddings.embed_query(query)
+    query_embedding = embeddings.embed_query(query.question)
 
     # 2. Retrieve top chunks from Chroma
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=TOP_K
-    )
-
-    # Flatten Chroma result
+    results = collection.query(query_embeddings=[query_embedding], n_results=TOP_K)
     top_chunks = [
         {"content": c, "metadata": m}
         for c, m in zip(results["documents"][0], results["metadatas"][0])
     ]
 
     # 3. Ask Ollama
-    answer = ask_ollama(query, top_chunks)
-    print("\nOllama response:\n", answer)
+    answer = ask_ollama(query.question, top_chunks)
 
-if __name__ == "__main__":
-    main()
     end_time = time.time()
-    print(f"Runtime: {end_time - start_time:.2f} seconds")
+    runtime = end_time - start_time
+    print(f"Request processed in {runtime:.2f} seconds")
+
+    return {"answer": answer, "runtime_sec": runtime}
