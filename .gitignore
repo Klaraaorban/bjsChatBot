@@ -6,6 +6,9 @@ models/
 
 chroma_db/
 
+__pycache__/
+
 *.bin
 *.faiss
 *.whl
+*.pyc

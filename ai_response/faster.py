@@ -92,6 +92,6 @@ async def ask_endpoint(query: Query):
 
     return {
         "answer": answer,
-        "highlight": highlight or "Kein direkter Treffer in den Chunks.",
+        # "highlight": highlight or "Kein direkter Treffer in den Chunks.",
         "runtime_sec": runtime
     }

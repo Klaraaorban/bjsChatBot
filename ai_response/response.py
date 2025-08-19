@@ -4,7 +4,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import numpy as np
 import requests
 import time
-from faster import FastAPI
+from ai_response.faster import FastAPI
 from pydantic import BaseModel
 
 start_time = time.time()
