@@ -1,0 +1,11 @@
+venv_bot/
+
+data/
+
+models/
+
+chroma_db/
+
+*.bin
+*.faiss
+*.whl
