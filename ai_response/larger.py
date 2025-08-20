@@ -14,12 +14,13 @@ class Query(BaseModel):
 
 # ---------------- Config ----------------
 CHROMA_DIR = "chroma_db"
+# COLLECTION_NAME = "bjs_colSmall"
 COLLECTION_NAME = "bjs_colAngularBig"
 # EMBEDDING_MODEL = r"C:\bjsChatBot\multilingual-e5-base"
 EMBEDDING_MODEL = r"C:\bjsChatBot\models\multilingual-MiniLM"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "llama3.2:1b"
-TOP_K = 5
+TOP_K = 2
 
 # ---------------- Load Chroma ----------------
 chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
@@ -36,15 +37,18 @@ async def ask_ollama_async(query: str, chunks: list) -> str:
     context = "\n\n".join([f"{c['content']}\n(Source: {c.get('metadata', {}).get('source','unknown')})"
                            for c in chunks])
     prompt = f"""
-Beantworte die Frage basierend auf folgendem Kontext in mindestens 3 Sätze.
-Wenn die Antwort nicht im Kontext steht, sage 'Ich weiß es nicht'.
+    Du bist ein ausführlicher Assistent. 
+    Beantworte die Frage basierend auf folgendem Kontext. 
+    Gib eine umfassende Antwort, die wichtige Details einschließt. 
+    Wenn die Antwort nicht im Kontext steht, sage: 'Ich weiß es nicht'.
 
-Kontext:
-{context}
+    Kontext:
+    {context}
 
-Frage: {query}
-Antwort:
-"""
+    Frage: {query}
+    Ausführliche Antwort:
+    """
+
     payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
     async with httpx.AsyncClient() as client:
         response = await client.post(OLLAMA_URL, json=payload, timeout=None)
@@ -79,12 +83,12 @@ async def ask_endpoint(query: Query):
         answer = await ask_ollama_async(query.question, top_chunks)
 
         # 5. Optional: filter chunks containing keyword
-        # keyword = "Synodalrat"
-        # highlight = "\n\n".join([c["content"] for c in top_chunks if keyword in c["content"]])
+        keyword = "Synodalrat"
+        highlight = "\n\n".join([c["content"] for c in top_chunks if keyword in c["content"]])
 
         # 6. Cache the results
         query_cache[query.question] = answer
-        # query_cache[f"{query.question}_highlight"] = highlight
+        query_cache[f"{query.question}_highlight"] = highlight
 
     end_time = time.time()
     runtime = end_time - start_time
