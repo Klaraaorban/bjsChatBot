@@ -13,7 +13,7 @@ from crawling.crawl_angular import extract_links, extract_content
 
 # ---------------- Config ----------------
 CHROMA_DIR = r"chroma_db"
-COLLECTION_NAME = "bjs_colAngularBig"
+COLLECTION_NAME = "bjs_colAngular5"
 EMBEDDING_MODEL = r"C:\bjsChatBot\models\multilingual-MiniLM"
 
 # ---------------- Initialize persistent Chroma client ----------------
@@ -28,8 +28,9 @@ collection = (
 # ---------------- Chunking & Embedding ----------------
 def add_to_chroma(scraped_texts):
     # Chunk the scraped texts
+    # previously it was 1200 characters with 200 overlap
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600, chunk_overlap=200, length_function=len, add_start_index=True
+        chunk_size=600, chunk_overlap=100, length_function=len, add_start_index=True
     )
 
     chunks = []

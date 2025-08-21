@@ -14,7 +14,7 @@ class Query(BaseModel):
 
 # ---------------- Config ----------------
 CHROMA_DIR = "chroma_db"
-COLLECTION_NAME = "bjs_colAngularBig"
+COLLECTION_NAME = "bjs_colAngular5"
 # EMBEDDING_MODEL = r"C:\bjsChatBot\multilingual-e5-base"
 EMBEDDING_MODEL = r"C:\bjsChatBot\models\multilingual-MiniLM"
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -85,11 +85,17 @@ async def ask_endpoint(query: Query):
         # 6. Cache the results
         query_cache[query.question] = answer
         # query_cache[f"{query.question}_highlight"] = highlight
+        query_cache[query.question] = answer
 
     end_time = time.time()
     runtime = end_time - start_time
     print(f"Request processed in {runtime:.2f} seconds")
 
+    for i, chunk in enumerate(top_chunks, 1):
+        print(f"Chunk {i}:")
+        print("Content:", chunk["content"])
+        print("Metadata:", chunk["metadata"])
+        print("-" * 40)
     return {
         "answer": answer,
         # "highlight": highlight or "Kein direkter Treffer in den Chunks.",
